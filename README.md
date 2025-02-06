@@ -36,6 +36,48 @@ function Div() {
 }
 ```
 
+You can also have components that return other components:
+
+```js
+function App() {
+  return <Div />
+}
+```
+
+This would become:
+
+```js
+function App() {
+  return React.createElement(Div, null)
+}
+```
+
+And then we call it recursively.
+
+Here you can also see why you need to return a single root node from a component. You can't have siblings in a component.
+
+Writing something like this isn't possible in JavaScript:
+
+```js
+// in jsx
+function App() {
+  return (
+    <Comp />
+    <Comp />
+  )
+}
+
+// transformed into
+function App() {
+  return React.createElement(Div, null)
+
+  // We NEVER reach this line of code
+  return React.createElement(Div, null)
+}
+```
+
+When you understand this, it's easy to know why you can't have siblings in a component.
+
 # How Virtual DOM Diffing Works
 
 ## A simple count example
