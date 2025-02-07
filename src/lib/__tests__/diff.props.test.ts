@@ -1,5 +1,5 @@
 import { diffNodes } from '../diff'
-import { VNode } from '../types'
+import { Props, VNode } from '../types'
 
 describe('diffNodes - Props cases', () => {
   test('returns PROPS patch when static element props change', () => {
@@ -49,8 +49,72 @@ describe('diffNodes - Props cases', () => {
   })
 
   // For regular components
-  test('returns PROPS patch when regular component props have different values')
-  test('returns PROPS patch when regular component props has new prop')
+  test('returns PROPS patch when regular component props have different values', () => {
+    const ComponentFn = (props: Props): VNode => ({
+      kind: 'static',
+      type: 'div',
+      props,
+      children: [],
+    })
+
+    const oldNode: VNode = {
+      kind: 'regular',
+      type: ComponentFn,
+      props: { count: 1 },
+      children: [],
+    }
+
+    const newNode: VNode = {
+      kind: 'regular',
+      type: ComponentFn,
+      props: { count: 2 },
+      children: [],
+    }
+
+    const patches = diffNodes(oldNode, newNode)
+
+    expect(patches).toEqual([
+      {
+        type: 'PROPS',
+        node: oldNode,
+        newProps: { count: 2 },
+      },
+    ])
+  })
+
+  test('returns PROPS patch when regular component props has new prop', () => {
+    const ComponentFn = (props: Props): VNode => ({
+      kind: 'static',
+      type: 'div',
+      props,
+      children: [],
+    })
+
+    const oldNode: VNode = {
+      kind: 'regular',
+      type: ComponentFn,
+      props: { count: 1 },
+      children: [],
+    }
+
+    const newNode: VNode = {
+      kind: 'regular',
+      type: ComponentFn,
+      props: { count: 1, newProp: 'test' },
+      children: [],
+    }
+
+    const patches = diffNodes(oldNode, newNode)
+
+    expect(patches).toEqual([
+      {
+        type: 'PROPS',
+        node: oldNode,
+        newProps: { count: 1, newProp: 'test' },
+      },
+    ])
+  })
+
   test('returns PROPS patch when regular component props is missing a prop')
 
   // For memo
