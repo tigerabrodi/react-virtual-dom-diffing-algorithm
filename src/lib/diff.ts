@@ -11,6 +11,21 @@ export function diffNodes(oldNode: VNode, newNode: VNode): Array<Patch> {
     })
   }
 
+  if (oldNode.kind === 'memo' && newNode.kind === 'memo') {
+    // If props are NOT the same
+    // Means not true
+    // Then we update all props with newProps
+    const oldProps = oldNode.props
+    const newProps = newNode.props
+    if (oldNode.compare(oldProps, newProps) === false) {
+      patches.push({
+        type: 'PROPS',
+        node: oldNode,
+        newProps,
+      })
+    }
+  }
+
   if (oldNode.kind === 'regular' && newNode.kind === 'regular') {
     const oldProps = oldNode.props
     const newProps = newNode.props

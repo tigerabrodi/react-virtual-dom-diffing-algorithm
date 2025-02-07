@@ -149,9 +149,41 @@ describe('diffNodes - Props cases', () => {
   })
 
   // For memo
-  test(
-    'returns PROPS patch when memo component props change and compare returns false'
-  )
+  test('returns PROPS patch when memo component props change and compare returns false', () => {
+    const ComponentFn = (props: Props): VNode => ({
+      kind: 'static',
+      type: 'div',
+      props,
+      children: [],
+    })
+
+    const oldNode: VNode = {
+      kind: 'memo',
+      type: ComponentFn,
+      props: { count: 1 },
+      children: [],
+      compare: () => false, // Always says props are different
+    }
+
+    const newNode: VNode = {
+      kind: 'memo',
+      type: ComponentFn,
+      props: { count: 2 },
+      children: [],
+      compare: () => false,
+    }
+
+    const patches = diffNodes(oldNode, newNode)
+
+    expect(patches).toEqual([
+      {
+        type: 'PROPS',
+        node: oldNode,
+        newProps: { count: 2 },
+      },
+    ])
+  })
+
   test(
     'returns no patches when memo component props change but compare returns true'
   )
