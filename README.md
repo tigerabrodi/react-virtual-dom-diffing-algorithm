@@ -6,6 +6,8 @@ Link to main code: [src/lib/diff.ts](./src/lib/diff.ts)
 
 To be clear, this focuses on the diffing algorithm. It's not the entire React library or every single piece of the VDOM.
 
+I've also chose to structure vnodes in a way that's understandable and not messy. It's a scoped version that doesn't handle every single edge case.
+
 I honestly wanted to build React from scratch. But I wanted to scope it down to something where I can learn, and it doesn't take forever.
 
 I guess I could use babel jsx transform and then implement a scoped version of React from scratch. But maybe another day, or my own framerwork if a full framework from scratch (i got some ideas in mind hehe)
