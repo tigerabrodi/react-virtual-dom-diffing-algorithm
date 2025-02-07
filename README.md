@@ -1,10 +1,16 @@
 # React Virtual DOM Diffing Algorithm
 
-I'm implementing React's Virtual DOM Diffing Algorithm to really understand how React works. The goal here isn't a complete implementation, but rather a deep understanding. It's also fun to implement things like this because you can just drive it with tests.
+I'm implementing React's diffing algorithm to really learn the virtual DOM. The goal here isn't a complete implementation, but rather a deep understanding. It's also fun to implement things like this because you can just drive it with tests.
+
+Link to main code: [src/lib/diff.ts](./src/lib/diff.ts)
 
 To be clear, this focuses on the diffing algorithm. It's not the entire React library or every single piece of the VDOM.
 
-Things I'm leaving out:
+I honestly wanted to build React from scratch. But I wanted to scope it down to something where I can learn, and it doesn't take forever.
+
+I guess I could use babel jsx transform and then implement a scoped version of React from scratch. But maybe another day, or my own framerwork if a full framework from scratch (i got some ideas in mind hehe)
+
+Anyways, the notes you find below is just some research notes. I could turn it into a blog post in hindsight. But I got way too many React blog posts already. I was even referring to my own blog posts when taking this "step back" approach to learning here. I guess my younger self is teaching my older self a thing or two 🤣
 
 # React.createElement
 
