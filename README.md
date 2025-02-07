@@ -4,6 +4,8 @@ I'm implementing React's Virtual DOM Diffing Algorithm to really understand how 
 
 To be clear, this focuses on the diffing algorithm. It's not the entire React library or every single piece of the VDOM.
 
+Things I'm leaving out:
+
 # React.createElement
 
 `React.createElement` is the function that React uses to create virtual DOM nodes.
@@ -464,3 +466,25 @@ So we get a new vdom subtree there too.
 ```
 
 It's important again to note that React only updates the real DOM if there are _actual_ changes. Even if the element or component was re-rendered/re-created.
+
+## How memo is handled
+
+When dealing with memoized components, React sees something like this:
+
+```js
+// When React sees:
+<MemoButton />
+
+// It actually sees something like:
+{
+  type: {
+    $$typeof: Symbol(react.memo),
+    type: OriginalButton,
+    compare: defaultCompare  // or custom compare function
+  },
+  props: {},
+  children: []
+}
+```
+
+This way, it knows to use the compare function to check if the component should be updated. We'd pass old and new props to the compare function. By default, it's a shallow comparison (Object.is).
