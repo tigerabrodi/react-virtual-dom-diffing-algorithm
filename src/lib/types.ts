@@ -18,7 +18,8 @@ export type StaticVNode = {
   kind: 'static'
   type: string
   props: Props
-  children: Array<VNode | string | number>
+  children: Array<VNode>
+  key?: string | number // Add optional key
 }
 
 // A component takes props and returns a VNode
@@ -29,7 +30,8 @@ export type RegularComponentVNode = {
   kind: 'regular'
   type: ComponentFunction
   props: Props
-  children: Array<VNode | string | number>
+  children: Array<VNode>
+  key?: string | number // Add optional key
 }
 
 /** Memoized component */
@@ -38,7 +40,8 @@ export type MemoComponentVNode = {
   type: ComponentFunction
   compare: (prevProps: Props, nextProps: Props) => boolean
   props: Props
-  children: Array<VNode | string | number>
+  children: Array<VNode>
+  key?: string | number // Add optional key
 }
 
 export type ComponentVNode = RegularComponentVNode | MemoComponentVNode
@@ -65,12 +68,17 @@ export type ReorderPatch = {
   toIndex: number
 }
 
+// Here we need to know the index
+// Otherwise we won't know where to insert the node
 export type InsertPatch = {
   type: 'INSERT'
   node: VNode
   index: number
 }
 
+// Here index doesn't matter
+// When we find the node, we know to remove it
+// We know it's already in the tree
 export type RemovePatch = {
   type: 'REMOVE'
   node: VNode
