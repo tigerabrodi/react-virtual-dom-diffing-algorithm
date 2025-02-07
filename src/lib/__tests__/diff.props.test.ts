@@ -115,7 +115,38 @@ describe('diffNodes - Props cases', () => {
     ])
   })
 
-  test('returns PROPS patch when regular component props is missing a prop')
+  test('returns PROPS patch when regular component props is missing a prop', () => {
+    const ComponentFn = (props: Props): VNode => ({
+      kind: 'static',
+      type: 'div',
+      props,
+      children: [],
+    })
+
+    const oldNode: VNode = {
+      kind: 'regular',
+      type: ComponentFn,
+      props: { count: 1, toRemove: 'test' },
+      children: [],
+    }
+
+    const newNode: VNode = {
+      kind: 'regular',
+      type: ComponentFn,
+      props: { count: 1 },
+      children: [],
+    }
+
+    const patches = diffNodes(oldNode, newNode)
+
+    expect(patches).toEqual([
+      {
+        type: 'PROPS',
+        node: oldNode,
+        newProps: { count: 1 },
+      },
+    ])
+  })
 
   // For memo
   test(
