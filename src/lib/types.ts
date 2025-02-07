@@ -31,7 +31,7 @@ export type RegularComponentVNode = {
   type: ComponentFunction
   props: Props
   children: Array<VNode>
-  key?: string | number // Add optional key
+  key?: string | number
 }
 
 /** Memoized component */
@@ -41,7 +41,7 @@ export type MemoComponentVNode = {
   compare: (prevProps: Props, nextProps: Props) => boolean
   props: Props
   children: Array<VNode>
-  key?: string | number // Add optional key
+  key?: string | number
 }
 
 export type ComponentVNode = RegularComponentVNode | MemoComponentVNode
@@ -79,6 +79,7 @@ export type InsertPatch = {
 // Here index doesn't matter
 // When we find the node, we know to remove it
 // We know it's already in the tree
+// We'd find it via the reference
 export type RemovePatch = {
   type: 'REMOVE'
   node: VNode
