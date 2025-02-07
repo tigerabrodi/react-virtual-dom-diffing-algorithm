@@ -93,7 +93,4 @@ describe('diffNodes - Replace cases', () => {
       },
     ])
   })
-
-  // test('returns REPLACE when regular component becomes memo component')
-  // test('returns REPLACE when memo component becomes regular component')
 })
