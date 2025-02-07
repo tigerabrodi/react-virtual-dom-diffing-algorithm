@@ -180,7 +180,7 @@ describe('diffNodes - Children cases', () => {
     const ComponentFn = (props: Props): VNode => ({
       kind: 'static',
       type: 'div',
-      props: {},
+      props,
       children: [],
     })
 
@@ -219,24 +219,204 @@ describe('diffNodes - Children cases', () => {
     expect(patches).toEqual([])
   })
 
-  // Text and number nodes
-  test('handles text node changes')
-  test('handles number node changes')
-  test('handles mixed node types (elements, text, numbers)')
+  test('handles multiple children additions and removals', () => {
+    const oldNode: StaticVNode = {
+      kind: 'static',
+      type: 'div',
+      props: {},
+      children: [
+        {
+          kind: 'static',
+          type: 'span',
+          props: { id: '1' },
+          children: [],
+          key: '1',
+        },
+        {
+          kind: 'static',
+          type: 'span',
+          props: { id: '2' },
+          children: [],
+          key: '2',
+        },
+      ],
+    }
 
-  // Nested structures
-  test('recursively diffs nested children')
-  test('handles deeply nested structure changes')
-  test('correctly patches nested children props changes')
+    const newNode: StaticVNode = {
+      kind: 'static',
+      type: 'div',
+      props: {},
+      children: [
+        {
+          kind: 'static',
+          type: 'span',
+          props: { id: '3' },
+          children: [],
+          key: '3', // New key
+        },
+        {
+          kind: 'static',
+          type: 'span',
+          props: { id: '1' },
+          children: [],
+          key: '1', // Same key as before
+        },
+      ],
+    }
 
-  // Edge cases
-  test('handles empty children array to non-empty')
-  test('handles non-empty children array to empty')
-  test('handles null/undefined children')
-  test('handles children type changes (text to element)')
+    const patches = diffNodes(oldNode, newNode)
 
-  // Mixed node kinds
-  test('handles mix of static and component children')
-  test('handles mix of regular and memo component children')
-  test('preserves memoization in nested children')
+    // Should generate:
+    // - REORDER for id:1 span, fromIndex: 0 toIndex: 1
+    // - REMOVE for id:2 span
+    // - INSERT for id:3 span
+    expect(patches).toEqual([
+      {
+        type: 'REORDER',
+        node: oldNode.children[0], // id:1 span
+        fromIndex: 0,
+        toIndex: 1,
+      },
+      {
+        type: 'REMOVE',
+        node: oldNode.children[1], // id:2 span
+      },
+      {
+        type: 'INSERT',
+        node: newNode.children[0], // id:3 span
+        index: 0,
+      },
+    ])
+  })
+
+  // Nested structures - Important for recursive diffing
+  test('recursively diffs nested children', () => {
+    const oldNode: StaticVNode = {
+      kind: 'static',
+      type: 'div',
+      props: {},
+      children: [
+        {
+          kind: 'static',
+          type: 'div',
+          props: {},
+          children: [
+            {
+              kind: 'static',
+              type: 'span',
+              props: { value: 'old' },
+              children: [],
+              key: 'nested',
+            },
+          ],
+          key: 'parent',
+        },
+      ],
+    }
+
+    const newNode: StaticVNode = {
+      kind: 'static',
+      type: 'div',
+      props: {},
+      children: [
+        {
+          kind: 'static',
+          type: 'div',
+          props: {},
+          children: [
+            {
+              kind: 'static',
+              type: 'span',
+              props: { value: 'new' },
+              children: [],
+              key: 'nested',
+            },
+          ],
+          key: 'parent',
+        },
+      ],
+    }
+
+    const patches = diffNodes(oldNode, newNode)
+
+    expect(patches).toEqual([
+      {
+        type: 'PROPS',
+        node: oldNode.children[0].children[0],
+        newProps: { value: 'new' },
+      },
+    ])
+  })
+
+  // Mixed node kinds - Tests how different node types interact
+  test('handles mix of regular and memo component children', () => {
+    const ComponentFn = (props: Props): VNode => ({
+      kind: 'static',
+      type: 'div',
+      props,
+      children: [],
+    })
+
+    const MemoComponentFn = (props: Props): VNode => ({
+      kind: 'static',
+      type: 'span',
+      props,
+      children: [],
+    })
+
+    const oldNode: StaticVNode = {
+      kind: 'static',
+      type: 'div',
+      props: {},
+      children: [
+        {
+          kind: 'regular',
+          type: ComponentFn,
+          props: { value: 'old' },
+          children: [],
+          key: 'regular',
+        },
+        {
+          kind: 'memo',
+          type: MemoComponentFn,
+          props: { value: 'old' },
+          children: [],
+          compare: (prev, next) => prev.value === next.value,
+          key: 'memo',
+        },
+      ],
+    }
+
+    const newNode: StaticVNode = {
+      kind: 'static',
+      type: 'div',
+      props: {},
+      children: [
+        {
+          kind: 'regular',
+          type: ComponentFn,
+          props: { value: 'new' },
+          children: [],
+          key: 'regular',
+        },
+        {
+          kind: 'memo',
+          type: MemoComponentFn,
+          props: { value: 'old' }, // Same value, shouldn't update
+          children: [],
+          compare: (prev, next) => prev.value === next.value,
+          key: 'memo',
+        },
+      ],
+    }
+
+    const patches = diffNodes(oldNode, newNode)
+    expect(patches).toEqual([
+      {
+        type: 'PROPS',
+        node: oldNode.children[0],
+        newProps: { value: 'new' },
+      },
+    ])
+  })
 })

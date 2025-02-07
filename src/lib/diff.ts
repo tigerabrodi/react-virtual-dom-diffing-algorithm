@@ -82,43 +82,100 @@ export function diffNodes(oldNode: VNode, newNode: VNode): Array<Patch> {
     const oldChildren = oldNode.children
     const newChildren = newNode.children
 
-    // maxLength so that we go over all children
-    const maxLength = Math.max(oldChildren.length, newChildren.length)
+    // Get all keys and map to index for both old and new children
+    const oldKeys = new Map<string | number, number>()
+    const newKeys = new Map<string | number, number>()
 
-    for (let i = 0; i < maxLength; i++) {
-      // Either both exists or one of them doesn't
-      // We know because of maxLength, either of them will always exist till the end
-      const oldChild = oldChildren[i]
-      const newChild = newChildren[i]
+    // Track which indices we've handled
+    // When handling children without keys, we need to know which ones we've already handled
+    const handledIndices = new Set<number>()
 
-      // If old child doesn't exist, we know that newChild exists
-      if (!oldChild) {
-        patches.push({
-          type: 'INSERT',
-          node: newChild, // Already VNode which is either static or component node
-          index: i,
-        })
+    // Gather all keys for both old and new children
+    oldChildren.forEach((child, index) => {
+      if (child.key) oldKeys.set(child.key, index)
+    })
 
-        // No need to do any more work here
-        // Continue to the next child
-        continue
-      }
+    newChildren.forEach((child, index) => {
+      if (child.key) newKeys.set(child.key, index)
+    })
 
-      if (!newChild) {
+    // Handle keyed nodes first
+    oldChildren.forEach((oldChild, indexInOldVDom) => {
+      if (!oldChild.key) return // Skip keyless for now
+
+      if (!newKeys.has(oldChild.key)) {
+        // Key no longer exists -> REMOVE
         patches.push({
           type: 'REMOVE',
-          node: oldChild, // Already VNode which is either static or component node
+          node: oldChild,
+        })
+      } else {
+        const indexInNewVDom = newKeys.get(oldChild.key)!
+        const hasMoved = indexInNewVDom !== indexInOldVDom
+        if (hasMoved) {
+          // Position changed -> REORDER
+          patches.push({
+            type: 'REORDER',
+            node: oldChild,
+            fromIndex: indexInOldVDom,
+            toIndex: indexInNewVDom,
+          })
+        }
+
+        const newChild = newChildren[indexInNewVDom]
+
+        // Handle the keyed child recursively using both its old and new child
+        patches.push(...diffNodes(oldChild, newChild))
+
+        handledIndices.add(indexInNewVDom)
+      }
+    })
+
+    newChildren.forEach((newChild, indexInNewVDom) => {
+      if (!newChild.key) return // Skip keyless for now
+
+      if (!oldKeys.has(newChild.key)) {
+        // New key -> INSERT
+        patches.push({
+          type: 'INSERT',
+          node: newChild,
+          index: indexInNewVDom,
         })
 
-        // No need to do any more work here
-        continue
+        handledIndices.add(indexInNewVDom)
       }
+    })
 
-      // Both exist! Need to diff them
-      // We know that both are VNode
-      // diffNodes will return patches for the children
-      const patch = diffNodes(oldChild, newChild)
-      patches.push(...patch)
+    // Now handle keyless nodes by position
+    // But only for indices we haven't handled yet!
+    const maxLength = Math.max(oldChildren.length, newChildren.length)
+
+    for (let index = 0; index < maxLength; index++) {
+      const hasAlreadyBeenHandled = handledIndices.has(index)
+      if (hasAlreadyBeenHandled) continue
+
+      const oldChild = oldChildren[index]
+      const newChild = newChildren[index]
+
+      if (!oldChild && newChild) {
+        // New child for this position (index)
+        // We know it won't collide with the keyed children because we're always skipping them
+        patches.push({
+          type: 'INSERT',
+          node: newChild,
+          index: index,
+        })
+      } else if (oldChild && !newChild) {
+        // Old child exists, but new child doesn't
+        // Remove the old child
+        patches.push({
+          type: 'REMOVE',
+          node: oldChild,
+        })
+      } else if (oldChild && newChild) {
+        // Both exist, diff them recursively
+        patches.push(...diffNodes(oldChild, newChild))
+      }
     }
   }
 
