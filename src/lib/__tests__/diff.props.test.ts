@@ -28,6 +28,26 @@ describe('diffNodes - Props cases', () => {
     ])
   })
 
+  test('returns no patches when props are unchanged', () => {
+    const oldNode: VNode = {
+      kind: 'static',
+      type: 'div',
+      props: { className: 'test', id: 'some-id' },
+      children: [],
+    }
+
+    const newNode: VNode = {
+      kind: 'static',
+      type: 'div',
+      props: { className: 'test', id: 'some-id' },
+      children: [],
+    }
+
+    const patches = diffNodes(oldNode, newNode)
+
+    expect(patches).toEqual([])
+  })
+
   // For regular components
   test('returns PROPS patch when regular component props have different values')
   test('returns PROPS patch when regular component props has new prop')
